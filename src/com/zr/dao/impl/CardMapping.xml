@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace用于唯一标示映射文件，命名规则包名+文件名 -->
+<mapper namespace="com.zr.dao.CardDao">
+
+	<resultMap type="com.zr.beans.KeHu" id="KeHu">
+		<id property="kehu_id" column="kehu_id" />
+		<result property="kehu_name" column="kehu_name" />
+		<result property="kehu_sex" column="kehu_sex" />
+		<result property="kehu_number" column="kehu_number" />
+		<result property="kehu_birthday" column="kehu_birthday" />
+		<result property="kehu_native" column="kehu_native" />
+		<result property="kehu_phone" column="kehu_phone" />
+		<result property="kehu_family" column="kehu_family" />
+
+		<collection property="cards" ofType="com.zr.beans.Card">
+			<id property="card_id" column="card_id" />
+			<result property="card_number" column="card_number" />
+			<result property="card_type" column="card_type" />
+			<result property="card_quota" column="card_quota" />
+			<result property="card_time" column="card_time" />
+			<result property="card_status" column="card_status" />
+			<result property="card_password" column="card_password" />
+			<result property="card_remainder" column="card_remainder" />
+			<result property="card_integral" column="card_integral" />
+			<result property="card_overdue" column="card_overdue" />
+		</collection>
+	</resultMap>
+
+	<!-- 全查信用卡信息 -->
+	<select id="findAllCard" parameterType="com.zr.beans.KeHu"
+		resultMap="KeHu">
+		select * from ZR_CARD card join ZR_KEHU kehu on
+		card.kehu_id=kehu.kehu_id limit #{start},#{pageSize}
+	</select>
+
+	<select id="findAllCardCount" resultType="int">
+		select count(*) from
+		ZR_CARD card join ZR_KEHU kehu on
+		card.kehu_id=kehu.kehu_id
+	</select>
+	<!-- 根据用户名查询信用卡信息 -->
+	<select id="findAllCardByKeHu_name1" parameterType="com.zr.beans.KeHu"
+		resultMap="KeHu">
+		select * from ZR_KEHU kehu join ZR_CARD card on
+		card.kehu_id=kehu.kehu_id
+		where kehu_name like
+		concat('%',concat(#{kehu_name},'%'))
+	</select>
+
+	<resultMap type="com.zr.beans.Card" id="Card">
+		<id property="card_id" column="card_id" />
+		<result property="card_number" column="card_number" />
+		<result property="card_type" column="card_type" />
+		<result property="card_quota" column="card_quota" />
+		<result property="card_time" column="card_time" />
+		<result property="card_status" column="card_status" />
+		<result property="card_password" column="card_password" />
+		<result property="card_remainder" column="card_remainder" />
+		<result property="card_integral" column="card_integral" />
+		<result property="card_overdue" column="card_overdue" />
+	</resultMap>
+	<!-- 禁用信用卡 -->
+	<update id="jinyong" parameterType="com.zr.beans.Card">
+		update ZR_Card set
+		card_status='禁用' where card_id = #{card_id}
+	</update>
+	<!-- 更新信用卡剩余额度 -->
+	<update id="updateCard_remainder" parameterType="com.zr.beans.Card">
+		update ZR_Card
+		set card_remainder=#{card_remainder}-#{pay_num} where card_number =
+		#{card_number}
+	</update>
+	
+
+	<resultMap type="com.zr.beans.Bill" id="bill">
+		<id property="bill_id" column="bill_id" />
+		<result property="start_time" column="start_time" />
+		<result property="end_time" column="end_time" />
+		<association property="card" javaType="com.zr.beans.Card">
+			<id property="card_id" column="card_id" />
+			<result property="card_number" column="card_number" />
+			<result property="card_type" column="card_type" />
+			<result property="card_quota" column="card_quota" />
+			<result property="card_time" column="card_time" />
+			<result property="card_status" column="card_status" />
+			<result property="card_password" column="card_password" />
+			<result property="card_remainder" column="card_remainder" />
+			<result property="card_integral" column="card_integral" />
+			<result property="card_overdue" column="card_overdue" />
+		</association>
+	</resultMap>
+
+	<!-- 通过客户名字查询到客户id-->
+	<!-- <select id="findKeHu_id" resultType="string">
+		select kehu_id from ZR_KEHU where kehu_name=${kehu_name}
+	</select> -->
+	
+	<!-- 通过客户id查询到信用卡信息（card_id） -->
+	<!-- <select id="findCard_id" resultType="int">
+		select card_id from ZR_APPLY apply join ZR_KEHU kehu on apply.kehu_id =  kehu.kehu_id
+	</select> -->
+	<!-- 查询应该还款日期(card_id查询) -->
+	<select id="findBillDate" parameterType="com.zr.beans.Bill" resultMap="bill">
+		select * from ZR_BILL
+		bill where card_id = #{card.card_id}
+	</select>
+	
+	<!-- 还款操作（包括增加信用额度和信用积分） -->
+	<update id="huankuan" parameterType="com.zr.beans.Bill">
+		update ZR_Card
+		set card_remainder=card_remainder+#{repay},card_integral=card_integral+1 where card_number =
+		#{card.card_number}
+	</update>
+	
+
+</mapper>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	 http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+	 http://www.springframework.org/schema/context
+	 http://www.springframework.org/schema/context/spring-context-4.2.xsd
+	 http://www.springframework.org/schema/aop
+	 http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+	 http://www.springframework.org/schema/tx
+	 http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+	 
+
+ <!-- 配置数据源信息 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="jdbcUrl" value="jdbc:mysql://localhost:3306/zr_card_system"></property>
+		<property name="driverClass" value="com.mysql.jdbc.Driver"></property>
+		<property name="user" value="root"></property>
+		<property name="password" value="root"></property>
+		<property name="initialPoolSize" value="3"></property>
+		<property name="maxPoolSize" value="6"></property>
+	</bean>
+	
+	<!-- 配置SqlSessionFactory -->
+	<bean id="sf" class="org.mybatis.spring.SqlSessionFactoryBean" p:dataSource-ref="dataSource">
+	  <property name="mapperLocations" value="classpath:com/zr/dao/impl/*.xml"/>
+	</bean>
+	
+	
+	<!-- 配置事务管理器 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" p:dataSource-ref="dataSource"></bean>
+	<!-- 增强：事务管理部分 -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+	   <tx:attributes>
+	      <tx:method name="regist" propagation="REQUIRED"/>
+	      <tx:method name="login" read-only="true"/>
+	   </tx:attributes>
+	</tx:advice>
+	<!-- 配置切面 -->
+	<aop:config>
+	   <aop:pointcut expression="execution(* com.zr.service.impl.*.*(..))" id="txPoint"/>
+	   <!-- 增强部分 -->
+	   <aop:advisor advice-ref="txAdvice" pointcut-ref="txPoint"/>
+	</aop:config>
+</beans>

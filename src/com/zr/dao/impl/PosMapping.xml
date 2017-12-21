@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace用于唯一标示映射文件，命名规则包名+文件名 -->
+<mapper namespace="com.zr.dao.PosDao">
+
+	<resultMap type="com.zr.beans.Pos" id="Pos">
+		<id property="pos_id" column="pos_id" />
+		<result property="pos_number" column="pos_number" />
+		<result property="custom_type" column="custom_type" />
+		<result property="pay_num" column="pay_num" />
+		<result property="pay_time" column="pay_time" />
+
+		<association property="kehu" javaType="com.zr.beans.KeHu">
+			<id property="kehu_id" column="kehu_id" />
+			<result property="kehu_name" column="kehu_name" />
+			<result property="kehu_sex" column="kehu_sex" />
+			<result property="kehu_number" column="kehu_number" />
+			<result property="kehu_birthday" column="kehu_birthday" />
+			<result property="kehu_native" column="kehu_native" />
+			<result property="kehu_phone" column="kehu_phone" />
+			<result property="kehu_family" column="kehu_family" />
+
+			<collection property="cards" ofType="com.zr.beans.Card">
+				<id property="card_id" column="card_id" />
+				<result property="card_number" column="card_number" />
+				<result property="card_type" column="card_type" />
+				<result property="card_quota" column="card_quota" />
+				<result property="card_time" column="card_time" />
+				<result property="card_status" column="card_status" />
+				<result property="card_password" column="card_password" />
+				<result property="card_remainder" column="card_remainder" />
+				<result property="card_integral" column="card_integral" />
+				<result property="card_overdue" column="card_overdue" />
+			</collection>
+
+		</association>
+
+	</resultMap>
+	<!-- 全查客户消费信息 -->
+	<select id="findAllPosInfo" parameterType="com.zr.beans.Pos"
+		resultMap="Pos">
+		select * from (ZR_POS pos join ZR_KEHU kehu on pos.kehu_id =
+		kehu.kehu_id) left join ZR_CARD card on card.kehu_id = pos.kehu_id
+		limit #{start},#{pageSize}
+	</select>
+	<select id="findAllPosInfoCount" resultType="int">
+		select count(*) from
+		(ZR_POS pos join ZR_KEHU kehu on pos.kehu_id =
+		kehu.kehu_id) left join
+		ZR_CARD card on card.kehu_id = pos.kehu_id
+	</select>
+	
+	<!-- 添加消费信息 -->
+	<insert id="insertPosInfo" parameterType="com.zr.beans.Pos">
+	insert ZR_POS (kehu_id,pos_number,custom_type,pay_num,pay_time) values (#{kehu.kehu_id},#{pos_number},#{custom_type},#{pay_num},#{pay_time})
+	</insert>
+	
+	<!-- 更新信用卡剩余额度 -->
+	<update id="updateCard_remainder" parameterType="com.zr.beans.Pos">
+		update ZR_Card set card_remainder=(#{kehu.cards.card_remainder}-#{pay_num}) where card_number = #{kehu.cards.card_number}
+	</update>
+	
+		<!-- 按照用户名查询消费信息 -->
+	<select id="findAllPosInfoByKeHu_name" parameterType="com.zr.beans.Pos"
+		resultMap="Pos">
+		select * from (ZR_POS pos join ZR_KEHU kehu on pos.kehu_id =
+		kehu.kehu_id) left join ZR_CARD card on card.kehu_id = pos.kehu_id
+		where kehu.kehu_name like
+		concat('%',concat(#{kehu.kehu_name},'%'))
+	</select>
+
+	<!-- 匹配消费页面表单 -->
+	<select id="find" parameterType="com.zr.beans.Pos" resultMap="Pos">
+		select * from (ZR_POS pos join ZR_KEHU kehu on pos.kehu_id =
+		kehu.kehu_id) left join ZR_CARD card on card.kehu_id = pos.kehu_id where kehu.kehu_name=#{kehu.kehu_name}
+	</select>
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace用于唯一标示映射文件，命名规则包名+文件名 -->
+<mapper namespace="com.zr.dao.UserDao">
+
+	<resultMap type="com.zr.beans.User" id="User">
+		<id property="user_id" column="user_id" />
+		<result property="username" column="username" />
+		<result property="password" column="password" />
+		<result property="role" column="role" />
+	</resultMap>
+
+	<!-- 后台登陆 -->
+	<select id="findUserByName" parameterType="com.zr.beans.User"
+		resultType="com.zr.beans.User">
+		<!-- 此处写sql语句,#{Mapper类传入的参数} -->
+		select * from ZR_USER where username=#{username} and
+		password=#{password}
+	</select>
+
+
+
+	<resultMap type="com.zr.beans.KeHu" id="KeHu">
+		<result property="kehu_name" column="kehu_name" />
+		<result property="kehu_number" column="kehu_number" />
+	</resultMap>
+
+	<!-- 前台登陆 -->
+	<select id="findKeHuByKeHu_number" parameterType="com.zr.beans.KeHu"
+		resultType="com.zr.beans.KeHu">
+		<!-- 此处写sql语句,#{Mapper类传入的参数} -->
+		select * from ZR_KEHU where kehu_number=#{kehu_number}
+	</select>
+
+</mapper>
